@@ -13,4 +13,4 @@ output:
 
 <img src="Caitlin_Jeffrey.jfif" width = "200" height ="200" />
 
-### Week 3: [Link text: Homework 3 Answers](Homework/HW3.html)
+
