@@ -1,0 +1,14 @@
+---
+title: "Untitled"
+author: "Caitlin Jeffrey"
+date: "February 10, 2021"
+output: 
+  prettydoc::html_pretty:
+    theme: leonids
+    highlight: github
+---
+
+
+#Website for Computational Biology (BIO381)
+
+My name is *caitlin* github is making me **sad**
