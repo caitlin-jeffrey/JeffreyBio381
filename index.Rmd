@@ -14,3 +14,4 @@ output:
 <img src="Caitlin_Jeffrey.jfif" width = "200" height ="200" />
 
 
+Week 2: [Link text: Homework 2](Homework_02.html)
