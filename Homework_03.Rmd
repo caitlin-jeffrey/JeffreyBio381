@@ -1,0 +1,154 @@
+---
+title: "Homework3"
+author: "Caitlin Jeffrey"
+date: "2.17.2021"
+output: 
+  html_document: 
+    theme: cerulean
+---
+
+#Homework 3
+
+##*Regular expression puzzles*
+
+###1. Question one (preparing columns for a csv file):
+
+```
+Go from:
+First String    Second      1.22      3.4
+Second          More Text   1.555555  2.2220
+Third           x           3         124
+
+To:
+First String,Second,1.22,3.4
+Second,More Text,1.555555,2.2220
+Third,x,3,124
+
+FIND: [ \t]{2,} #finds two or more adjacent spaces within a line
+
+REPLACE: , #replaces these multiple spaces with a comma
+```
+
+###2. Question two:
+
+```
+Go from:
+Ballif, Bryan, University of Vermont
+Ellison, Aaron, Harvard Forest
+Record, Sydne, Bryn Mawr
+
+To:
+Bryan Ballif (University of Vermont)
+Aaron Ellison (Harvard Forest)
+Sydne Record (Bryn Mawr)
+
+FIND: (\w+),\s*(\w+),\s*(\w+\s\w.*).* #chops up the line into 3 different captures
+
+REPLACE: \2 \1 \(\3\) #rearranges the three captures and puts in parantheses
+
+```
+
+###3. Question three:
+
+```
+Go from:
+0001 Georgia Horseshoe.mp3 0002 Billy In The Lowground.mp3 0003 Cherokee Shuffle.mp3 0004 Walking Cane.mp3
+
+To:
+0001 Georgia Horseshoe.mp3
+0002 Billy In The Lowground.mp3
+0003 Cherokee Shuffle.mp3
+0004 Walking Cane.mp3
+
+FIND: (\.mp3 ) #captures the end of what we want for each line
+
+REPLACE: \1\r #after each capture, creates a line break 
+```
+
+###4. Question four:
+
+```
+Go from:
+0001 Georgia Horseshoe.mp3
+0002 Billy In The Lowground.mp3
+0003 Cherokee Shuffle.mp3
+0004 Walking Cane.mp3
+
+To:
+Georgia Horseshoe_0001.mp3
+Billy In The Lowground_0002.mp3
+Cherokee Shuffle_0003.mp3
+Walking Cane_0004.mp3
+
+FIND: ([0-9]{4})\s(\w+.*)(\.mp3 ) #chops up the line into 3 different captures
+
+REPLACE: \2_\1\3 #moves first capture (4-digit code) second, puts in an underscore before third capture 
+```
+
+
+###5. Question five:
+
+```
+Go from:
+Camponotus,pennsylvanicus,10.2,44
+Camponotus,herculeanus,10.5,3
+Myrmica,punctiventris,12.2,4
+Lasius,neoniger,3.3,55
+
+To:
+C_pennsylvanicus,44
+C_herculeanus,3
+M_punctiventris,4
+L_neoniger,55
+
+FIND: (\w)\w+,(\w+),(\d*\.\d),(\d+) #chops up the line into 4 different captures, only taking first letter of genus
+
+REPLACE: \1_\2,\4 #takes first letter of genus (first capture), then puts an underscore, second capture (first four of species) and inserts the last number (fourth capture)
+```
+
+###6. Question six:
+
+```
+Go from:
+Camponotus,pennsylvanicus,10.2,44
+Camponotus,herculeanus,10.5,3
+Myrmica,punctiventris,12.2,4
+Lasius,neoniger,3.3,55
+
+To:
+C_penn,44
+C_herc,3
+M_punc,4
+L_neon,55
+
+FIND: (\w)\w+,(\w{4})\w+,(\d*\.\d),(\d+) #chops up the line into 4 different captures, only taking first letter of genus and second capture is only first four letters of species
+
+REPLACE: \1_\2,\4 #takes first letter of genus (first capture), then puts an underscore, second capture (first 4 of species) and inserts the last number (fourth capture)
+```
+
+###7. Question seven:
+
+```
+Go from:
+Camponotus,pennsylvanicus,10.2,44
+Camponotus,herculeanus,10.5,3
+Myrmica,punctiventris,12.2,4
+Lasius,neoniger,3.3,55
+
+To:
+Campen, 44, 10.2
+Camher, 3, 10.5
+Myrpun, 4, 12.2
+Lasneo, 55, 3.3
+
+FIND: (\w{3})\w+,(\w{3})\w+,(\d*\.\d),(\d+) #chops up the line into 4 different captures, only taking first 3 letters of genus and second capture is only first three letters of species
+
+REPLACE: \1\2, \4, \3 #takes first 3 letters of genus (first capture) and combines with second capture (first 3 of species), inserts a comma, a space, the third capture with a comma and a space, and then the last number (fourth capture)
+```
+
+
+
+
+
+
+

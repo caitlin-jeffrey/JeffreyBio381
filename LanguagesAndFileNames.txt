@@ -1,0 +1,12 @@
+Languages
+- R (computing language + English comments)
+- LaTeX typesetting language - precise, hundreds of commands
+- Markdown - greatly simplified version of LaTeX, easy to use, easy to learn
+- yaml ("yet another markdown language") instructions for setting up markdown
+
+File types
+*.R - R script files (R language)
+*.Rmd - Rstudio's special blend of markdown AND R (R code embedded that will actually execute and run insdide markdown)
+*.md - standard markdown file (created temporarily from an .Rmd)
+*.Rnw - Rstudio's special blend of LaTeX and R (a LaTeX document, but can create in R)
+
