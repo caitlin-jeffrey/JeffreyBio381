@@ -53,7 +53,9 @@ A [linked phrase][id].
 
 ## Images
 
-![](C:\Users\caitl\OneDrive\Desktop\JeffreyBio381\0301201729b.jpg)
+
+
+![](0301201729b.jpg)
 
 
 
@@ -123,7 +125,7 @@ ___
 
 
 
-![](C:\Users\caitl\OneDrive\Desktop\JeffreyBio381\0224211450.jpg)
+![](0224211450.jpg)
 
 
 
