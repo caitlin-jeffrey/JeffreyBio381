@@ -14,12 +14,12 @@ output:
 <img src="Caitlin_Jeffrey.jfif" width = "200" height ="200" />
 
 
-Week 2: [Link text: Homework 2](Homework_02.html)
+Week 2: [Homework 2](Homework_02.html)
 
-Week 3: [Link text: Homework 3](Homework_03.html)
+Week 3: [Homework 3](Homework_03.html)
 
-Week 4: [Link text: Homework 4 Typora document](Homework_04_Typora.html)
+Week 4: [Homework 4 Typora document](Homework_04_Typora.html)
         
-Week 4: [Link text: Homework 4 Letterhead](Homework_04_Letterhead.pdf)
+Week 4: [Homework 4 Letterhead](Homework_04_Letterhead.pdf)
 
-Week 4: [Link text: Homework 4 Beamer presentation](Homework_04_Beamer.pdf)
+Week 4: [Homework 4 Beamer presentation](Homework_04_Beamer.pdf)
