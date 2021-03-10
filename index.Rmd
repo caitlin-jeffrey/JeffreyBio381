@@ -25,3 +25,5 @@ Week 4: [Homework 4 Letterhead](Homework_04_Letterhead.pdf)
 Week 4: [Homework 4 Beamer presentation](Homework_04_Beamer.pdf)
 
 Week 5: [Homework 5](Homework_05.html)
+
+Week 6: [Homework 6](Homework_06.html)
