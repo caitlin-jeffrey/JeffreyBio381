@@ -69,7 +69,7 @@ A [linked phrase][id].
 ## Plain code blocks
 
 ```
-This is a box of literal plain test. Just like I **type it**
+This is a box of literal plain text. Just like I **type it**
 ```
 
 

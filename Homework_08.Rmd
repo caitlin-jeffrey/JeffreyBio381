@@ -1,0 +1,291 @@
+---
+title: "Homework 08"
+author: "Caitlin Jeffrey"
+date: "March 31, 2021"
+output: html_document
+---
+
+# Homework 8
+
+## Preliminaries
+```{r}
+library(ggplot2)
+library(dplyr)
+```
+
+
+
+## Make data set
+
+```{r}
+# making a fake data set, with two treatment groups that both follow a normal distribution
+# used my own data set of 4212 mammary gland observations, separated into infected glands and healthy glands, then found the actual mean somatic cell count for each group (removing the NA's lead to n = 1042 observations of infected glands, n = 3063 observations of healthy glands). Used the actual means and sample sizes for each group in the "fake" data, left standard deviation at 2
+
+OREI<-read.csv("OREIculture_results_csv.csv", na.strings= ".", header = T) # read in entire data .csv
+IMI<-filter(OREI, imi_series=="yes") # make object with only infected glands
+IMI$scc<-as.numeric(IMI$scc) # coerce somatic cell count back to numeric
+mean(IMI[["scc"]], na.rm=T) # find actual mean SCC of infected glands, removing NA's (551,433.7)
+sd(IMI[["scc"]], na.rm=T) # find actual SD for SCC of infected glands, removing NA's (1,470,512)
+
+no<-filter(OREI, imi_series=="") # make object with only healthy glands
+no$scc<-as.numeric(no$scc) # coerce somatic cell count back to numeric
+mean(no[["scc"]], na.rm=T) # find actual mean SCC of infected glands, removing NA's (77,700.16)
+sd(no[["scc"]], na.rm=T) # find actual SD for SCC of infected glands, removing NA's (423,140.9)
+
+# now make fake data (both normal distribution) using parameters from real data above (except SD's, those are too wild)-------------
+infected<-cbind(rnorm(n=1042,mean=551000,sd=100000), rep(c("infected"), each=1042))
+healthy<-cbind(rnorm(n=3063,mean=78000,sd=100000), rep(c("healthy"), each=3063))
+inf_health<-rbind(infected, healthy)
+
+my_data<-as.data.frame(inf_health)
+my_data$observation_number <- 1:4105
+colnames(my_data) <-c("somatic_cell_count", "infection_status", "observation_number")
+my_data$somatic_cell_count<-as.numeric(my_data$somatic_cell_count)
+```
+
+## Data analysis
+
+```{r}
+# carry out analysis of variance (somatic cell count by infection status)
+scc_anov <- aov(somatic_cell_count ~ infection_status, data = my_data)
+print(summary(scc_anov)) # p <2e-16 with sample size n = 1042 and n = 3063
+```
+
+## Data visualization
+
+```{r}
+# make a box and whisker of above data
+my_data %>%
+  ggplot(aes(x=infection_status, y=somatic_cell_count, fill=infection_status)) +
+    geom_boxplot() +
+    scale_fill_brewer(palette="Blues")+
+    geom_jitter(color="black", size=0.4, alpha=0.9) +
+    labs(title="SCC by infection status of a gland",
+       x="Infection status",
+       y="Somatic cell count")+
+    theme(plot.title = element_text(hjust = 0.5))+
+    theme(axis.title.x = element_text(margin = margin(t = 20)))+
+    theme(axis.title.y = element_text(margin = margin(r = 20)))+
+    theme(plot.title = element_text(margin = margin(b = 20)))+
+    theme(panel.grid.major = element_line(colour = "grey"))+
+    theme(panel.grid.minor = element_blank())+
+    theme(panel.background = element_blank())+
+    theme(axis.line = element_line(colour = "grey"))
+```
+
+## Adjusting means
+
+```{r}
+# adjusting the means of the different groups to explore how small can the differences between the groups be to still detect a significant difference (given the sample sizes)
+
+infected<-cbind(rnorm(n=1042,mean=400000,sd=100000), rep(c("healthy"), each=1042))
+healthy<-cbind(rnorm(n=3063,mean=250000,sd=100000), rep(c("infected"), each=3063))
+inf_health<-rbind(infected, healthy)
+
+my_data<-as.data.frame(inf_health)
+my_data$observation_number <- 1:4105
+colnames(my_data) <-c("somatic_cell_count", "infection_status", "observation_number")
+my_data$somatic_cell_count<-as.numeric(my_data$somatic_cell_count)
+
+# carry out analysis of variance (somatic cell count by infection status)
+scc_anov <- aov(somatic_cell_count ~ infection_status, data = my_data)
+print(summary(scc_anov)) # p <2e-16 with means 400,000 and 250,000 (infected and healthy, respectively)
+
+# ----------------------------------------------------------------------------------------------
+infected<-cbind(rnorm(n=1042,mean=300000,sd=100000), rep(c("healthy"), each=1042))
+healthy<-cbind(rnorm(n=3063,mean=250000,sd=100000), rep(c("infected"), each=3063))
+inf_health<-rbind(infected, healthy)
+
+my_data<-as.data.frame(inf_health)
+my_data$observation_number <- 1:4105
+colnames(my_data) <-c("somatic_cell_count", "infection_status", "observation_number")
+my_data$somatic_cell_count<-as.numeric(my_data$somatic_cell_count)
+
+# carry out analysis of variance (somatic cell count by infection status)
+scc_anov <- aov(somatic_cell_count ~ infection_status, data = my_data)
+print(summary(scc_anov)) # p <2e-16 with means 300,000 and 250,000 (infected and healthy, respectively)
+
+# ----------------------------------------------------------------------------------------------
+infected<-cbind(rnorm(n=1042,mean=275000,sd=100000), rep(c("healthy"), each=1042))
+healthy<-cbind(rnorm(n=3063,mean=250000,sd=100000), rep(c("infected"), each=3063))
+inf_health<-rbind(infected, healthy)
+
+my_data<-as.data.frame(inf_health)
+my_data$observation_number <- 1:4105
+colnames(my_data) <-c("somatic_cell_count", "infection_status", "observation_number")
+my_data$somatic_cell_count<-as.numeric(my_data$somatic_cell_count)
+
+# carry out analysis of variance (somatic cell count by infection status)
+scc_anov <- aov(somatic_cell_count ~ infection_status, data = my_data)
+print(summary(scc_anov)) # p 5.16e-11 with means 275,000 and 250,000 (infected and healthy, respectively)
+
+# ----------------------------------------------------------------------------------------------
+infected<-cbind(rnorm(n=1042,mean=260000,sd=100000), rep(c("healthy"), each=1042))
+healthy<-cbind(rnorm(n=3063,mean=250000,sd=100000), rep(c("infected"), each=3063))
+inf_health<-rbind(infected, healthy)
+
+my_data<-as.data.frame(inf_health)
+my_data$observation_number <- 1:4105
+colnames(my_data) <-c("somatic_cell_count", "infection_status", "observation_number")
+my_data$somatic_cell_count<-as.numeric(my_data$somatic_cell_count)
+
+# carry out analysis of variance (somatic cell count by infection status)
+scc_anov <- aov(somatic_cell_count ~ infection_status, data = my_data)
+print(summary(scc_anov)) # p 7.46e-06 with means 260,000 and 250,000 (infected and healthy, respectively)
+
+# ----------------------------------------------------------------------------------------------
+infected<-cbind(rnorm(n=1042,mean=251000,sd=100000), rep(c("healthy"), each=1042))
+healthy<-cbind(rnorm(n=3063,mean=250000,sd=100000), rep(c("infected"), each=3063))
+inf_health<-rbind(infected, healthy)
+
+my_data<-as.data.frame(inf_health)
+my_data$observation_number <- 1:4105
+colnames(my_data) <-c("somatic_cell_count", "infection_status", "observation_number")
+my_data$somatic_cell_count<-as.numeric(my_data$somatic_cell_count)
+
+# carry out analysis of variance (somatic cell count by infection status)
+scc_anov <- aov(somatic_cell_count ~ infection_status, data = my_data)
+print(summary(scc_anov)) # p 0.0201 with means 251,000 and 250,000 (infected and healthy, respectively)
+
+# ----------------------------------------------------------------------------------------------
+infected<-cbind(rnorm(n=1042,mean=250500,sd=100000), rep(c("healthy"), each=1042))
+healthy<-cbind(rnorm(n=3063,mean=250000,sd=100000), rep(c("infected"), each=3063))
+inf_health<-rbind(infected, healthy)
+
+my_data<-as.data.frame(inf_health)
+my_data$observation_number <- 1:4105
+colnames(my_data) <-c("somatic_cell_count", "infection_status", "observation_number")
+my_data$somatic_cell_count<-as.numeric(my_data$somatic_cell_count)
+
+# carry out analysis of variance (somatic cell count by infection status)
+scc_anov <- aov(somatic_cell_count ~ infection_status, data = my_data)
+print(summary(scc_anov)) # p 0.637 with means 250,500 and 250,000 (infected and healthy, respectively) - no longer significantly different
+```
+
+
+## Adjusting sample sizes
+
+```{r}
+# adjusting the sample sizes of the different groups to explore how small can the differences between the groups be to still detect a significant difference (given the means)
+
+ninf<-1000
+nhealth<-2500
+infected<-cbind(rnorm(n=ninf,mean=551000,sd=100000), rep(c("healthy"), each=ninf))
+healthy<-cbind(rnorm(n=nhealth,mean=78000,sd=100000), rep(c("infected"), each=nhealth))
+inf_health<-rbind(infected, healthy)
+
+my_data<-as.data.frame(inf_health)
+colnames(my_data) <-c("somatic_cell_count", "infection_status")
+my_data$somatic_cell_count<-as.numeric(my_data$somatic_cell_count)
+
+# carry out analysis of variance (somatic cell count by infection status)
+scc_anov <- aov(somatic_cell_count ~ infection_status, data = my_data)
+print(summary(scc_anov)) # p <2e-16 with sample sizes 1000 and 2500 (infected and healthy, respectively)
+
+# -----------------------------------------------------------------------------------------------------
+ninf<-1000
+nhealth<-1500
+infected<-cbind(rnorm(n=ninf,mean=551000,sd=100000), rep(c("healthy"), each=ninf))
+healthy<-cbind(rnorm(n=nhealth,mean=78000,sd=100000), rep(c("infected"), each=nhealth))
+inf_health<-rbind(infected, healthy)
+
+my_data<-as.data.frame(inf_health)
+colnames(my_data) <-c("somatic_cell_count", "infection_status")
+my_data$somatic_cell_count<-as.numeric(my_data$somatic_cell_count)
+
+# carry out analysis of variance (somatic cell count by infection status)
+scc_anov <- aov(somatic_cell_count ~ infection_status, data = my_data)
+print(summary(scc_anov)) # p <2e-16 with sample sizes 1000 and 1500 (infected and healthy, respectively)
+
+# -----------------------------------------------------------------------------------------------------
+ninf<-500
+nhealth<-1000
+infected<-cbind(rnorm(n=ninf,mean=551000,sd=100000), rep(c("healthy"), each=ninf))
+healthy<-cbind(rnorm(n=nhealth,mean=78000,sd=100000), rep(c("infected"), each=nhealth))
+inf_health<-rbind(infected, healthy)
+
+my_data<-as.data.frame(inf_health)
+colnames(my_data) <-c("somatic_cell_count", "infection_status")
+my_data$somatic_cell_count<-as.numeric(my_data$somatic_cell_count)
+
+# carry out analysis of variance (somatic cell count by infection status)
+scc_anov <- aov(somatic_cell_count ~ infection_status, data = my_data)
+print(summary(scc_anov)) # p <2e-16 with sample sizes 500 and 1000 (infected and healthy, respectively)
+
+# -----------------------------------------------------------------------------------------------------
+ninf<-500
+nhealth<-500
+infected<-cbind(rnorm(n=ninf,mean=551000,sd=100000), rep(c("healthy"), each=ninf))
+healthy<-cbind(rnorm(n=nhealth,mean=78000,sd=100000), rep(c("infected"), each=nhealth))
+inf_health<-rbind(infected, healthy)
+
+my_data<-as.data.frame(inf_health)
+colnames(my_data) <-c("somatic_cell_count", "infection_status")
+my_data$somatic_cell_count<-as.numeric(my_data$somatic_cell_count)
+
+# carry out analysis of variance (somatic cell count by infection status)
+scc_anov <- aov(somatic_cell_count ~ infection_status, data = my_data)
+print(summary(scc_anov)) # p <2e-16 with sample sizes 500 and 500 (infected and healthy, respectively)
+
+# -----------------------------------------------------------------------------------------------------
+ninf<-100
+nhealth<-100
+infected<-cbind(rnorm(n=ninf,mean=551000,sd=100000), rep(c("healthy"), each=ninf))
+healthy<-cbind(rnorm(n=nhealth,mean=78000,sd=100000), rep(c("infected"), each=nhealth))
+inf_health<-rbind(infected, healthy)
+
+my_data<-as.data.frame(inf_health)
+colnames(my_data) <-c("somatic_cell_count", "infection_status")
+my_data$somatic_cell_count<-as.numeric(my_data$somatic_cell_count)
+
+# carry out analysis of variance (somatic cell count by infection status)
+scc_anov <- aov(somatic_cell_count ~ infection_status, data = my_data)
+print(summary(scc_anov)) # p <2e-16 with sample sizes 500 and 500 (infected and healthy, respectively)
+
+# -----------------------------------------------------------------------------------------------------
+ninf<-50
+nhealth<-50
+infected<-cbind(rnorm(n=ninf,mean=551000,sd=100000), rep(c("healthy"), each=ninf))
+healthy<-cbind(rnorm(n=nhealth,mean=78000,sd=100000), rep(c("infected"), each=nhealth))
+inf_health<-rbind(infected, healthy)
+
+my_data<-as.data.frame(inf_health)
+colnames(my_data) <-c("somatic_cell_count", "infection_status")
+my_data$somatic_cell_count<-as.numeric(my_data$somatic_cell_count)
+
+# carry out analysis of variance (somatic cell count by infection status)
+scc_anov <- aov(somatic_cell_count ~ infection_status, data = my_data)
+print(summary(scc_anov)) # p <2e-16 with sample sizes 50 and 50 (infected and healthy, respectively)
+
+# -----------------------------------------------------------------------------------------------------
+ninf<-5
+nhealth<-5
+infected<-cbind(rnorm(n=ninf,mean=551000,sd=100000), rep(c("healthy"), each=ninf))
+healthy<-cbind(rnorm(n=nhealth,mean=78000,sd=100000), rep(c("infected"), each=nhealth))
+inf_health<-rbind(infected, healthy)
+
+my_data<-as.data.frame(inf_health)
+colnames(my_data) <-c("somatic_cell_count", "infection_status")
+my_data$somatic_cell_count<-as.numeric(my_data$somatic_cell_count)
+
+# carry out analysis of variance (somatic cell count by infection status)
+scc_anov <- aov(somatic_cell_count ~ infection_status, data = my_data)
+print(summary(scc_anov)) # p 4.78e-05 with sample sizes 5 and 5 (infected and healthy, respectively)
+
+# -----------------------------------------------------------------------------------------------------
+ninf<-2
+nhealth<-2
+infected<-cbind(rnorm(n=ninf,mean=551000,sd=100000), rep(c("healthy"), each=ninf))
+healthy<-cbind(rnorm(n=nhealth,mean=78000,sd=100000), rep(c("infected"), each=nhealth))
+inf_health<-rbind(infected, healthy)
+
+my_data<-as.data.frame(inf_health)
+colnames(my_data) <-c("somatic_cell_count", "infection_status")
+my_data$somatic_cell_count<-as.numeric(my_data$somatic_cell_count)
+
+# carry out analysis of variance (somatic cell count by infection status)
+scc_anov <- aov(somatic_cell_count ~ infection_status, data = my_data)
+print(summary(scc_anov)) # p 0.0227 with sample sizes 2 and 2 (infected and healthy, respectively) ... apparently with the parameters chosen, won't get non-significant difference between the two groups
+```
+
+

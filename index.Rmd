@@ -29,3 +29,5 @@ Week 5: [Homework 5](Homework_05.html)
 Week 6: [Homework 6](Homework_06.html)
 
 Week 7: [Homework 7](Homework_07.html)
+
+Week 8: [Homework 8](Homework_08.html)
