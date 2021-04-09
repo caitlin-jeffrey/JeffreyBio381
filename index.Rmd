@@ -32,3 +32,4 @@ Week 7: [Homework 7](Homework_07.html)
 
 Week 8: [Homework 8](Homework_08.html)
 
+Week 9: [Homework 9: Oh Lawd, it's functions](Homework_09.html)
