@@ -1,0 +1,125 @@
+---
+title: "Homework 9"
+author: "Caitlin Jeffrey"
+date: "4/9/2021"
+output: html_document
+---
+# Homework 9
+
+## Preliminaries
+```{r}
+library(ggplot2)
+library(dplyr)
+```
+
+
+## Write functions, then use them
+
+```{r}
+# run functions ----------------------------
+
+###################################
+# FUNCTION: make_fake_data
+# make a fake data set of somatic cell counts for infected and healthy quarters
+# input: num_quarters = number of quarters in each health category
+      # mean_inf = mean SCC of infected quarters
+      # mean_healthy = mean SCC of healthy quarters
+# output: fake data set with parameters based on real data
+#---------------------------------
+make_data<-function(num_quarters, mean_inf, sd_inf, mean_healthy, sd_healthy) {
+  
+  infected<-cbind(rnorm(n=num_quarters,mean=mean_inf,sd=sd_inf),rep(c("infected"),
+                                                                    each=num_quarters))
+  healthy<-cbind(rnorm(n=num_quarters, mean=mean_healthy,sd=sd_healthy),
+                 rep(c("healthy"), each=num_quarters))
+  inf_health<-rbind(infected, healthy)
+  # inf_health_df<-as.data.frame(inf_health)
+  my_data<-as.data.frame(inf_health)
+  colnames(my_data) <-c("somatic_cell_count", "infection_status")
+  my_data$somatic_cell_count<-as.numeric(my_data$somatic_cell_count)
+  peek<-head(my_data)
+
+print(peek)  
+return(my_data)
+}
+
+###################################
+# FUNCTION: do_anova
+# carry out analysis of variance (somatic cell count by infection status)
+# input: x and y vector of numerics of same length for a dependent and independent variable
+# output: summary of ANOVA
+#---------------------------------
+do_anova <-function(x_var, y_var) {
+  y_x<-cbind(y_var, x_var)
+  my_data<-as.data.frame(y_x)
+  my_data$y_var<-as.numeric(my_data$y_var)
+  scc_anov <- aov(y_var ~ x_var, data = my_data)
+  
+  return(summary(scc_anov))
+  
+}
+
+###################################
+# FUNCTION: graph_results
+# graph results of scc by infection status
+# input: x and y vectors of numeric; must be same length
+# output: creates awesomne graph
+#---------------------------------
+graph_results <-function(x_var, y_var) {
+
+  y_x<-cbind(y_var, x_var)
+  my_data<-as.data.frame(y_x)
+  my_data$y_var<-as.numeric(my_data$y_var)
+ 
+  p1<-my_data %>%
+  ggplot(aes(x=x_var, y=y_var, fill=x_var)) +
+    geom_boxplot() +
+    scale_fill_brewer(palette="Blues")+
+    geom_jitter(color="black", size=0.4, alpha=0.9) +
+    labs(title="SCC by infection status of a gland",
+       x="Infection status",
+       y="Somatic cell count")+
+    theme(plot.title = element_text(hjust = 0.5))+
+    theme(axis.title.x = element_text(margin = margin(t = 20)))+
+    theme(axis.title.y = element_text(margin = margin(r = 20)))+
+    theme(plot.title = element_text(margin = margin(b = 20)))+
+    theme(panel.grid.major = element_line(colour = "grey"))+
+    theme(panel.grid.minor = element_blank())+
+    theme(panel.background = element_blank())+
+    theme(axis.line = element_line(colour = "grey"))
+print(p1)
+message("Message: BOOM here's a graph")
+
+}
+
+###################################
+# FUNCTION: do_more_stats
+# carry out ANOVA (somatic cell count by infection status) and print means for each infection status
+# input: x and y vector of numerics of same length for a dependent and independent variable
+# output: summary of ANOVA model and means for healthy and infected glands
+#---------------------------------
+do_more_stats <-function(x_var, y_var) {
+  y_x<-cbind(y_var, x_var)
+  my_data<-as.data.frame(y_x)
+  my_data$y_var<-as.numeric(my_data$y_var)
+  scc_anov <- aov(y_var ~ x_var, data = my_data)
+  
+  means<-summarise(group_by(my_data, x_var), mean=mean(y_var))
+  
+  print(means)
+  return(summary(scc_anov))
+}
+
+# program body ----------------------------
+
+scc<-make_data(num_quarters=2000, mean_inf=551000, sd_inf=100000, mean_healthy=78000, sd_healthy=100000)
+
+do_anova(y_var=scc$somatic_cell_count, x_var=scc$infection_status)
+
+do_more_stats(y_var=scc$somatic_cell_count, x_var=scc$infection_status)
+
+graph_results(y_var=scc$somatic_cell_count, x_var=scc$infection_status)
+
+```
+
+
