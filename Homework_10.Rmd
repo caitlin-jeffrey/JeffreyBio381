@@ -1,0 +1,226 @@
+---
+title: "Homework 10"
+author: "Caitlin Jeffrey"
+date: "April 14, 2021"
+output: html_document
+---
+
+# **Homework 10: for loops and randomization tests**
+
+## *"1. Using a for loop, write a function to calculate the number of zeroes in a numeric vector. Before entering the loop, set up a counter variable counter <- 0. Inside the loop, add 1 to counter each time you have a zero in the matrix. Finally, use return(counter) for the output."*
+
+
+```{r}
+# -------------------------------------------
+# FUNCTION zero_counter
+# description: count number of zeroes in a numeric vector
+# inputs: numeric vector
+# outputs: variable "counter" object that is number of 0's in vector
+#############################################
+
+zero_counter<-function(my_vec) {
+  counter<-0
+  for (i in seq_along(my_vec)) { 
+    if(my_vec[i]==0) {
+      counter <- counter + 1
+    }
+  }
+  return(counter)
+}
+
+my_vec <- rpois(20,1)
+
+zero_counter(my_vec)
+
+```
+
+## *"2. Use subsetting instead of a loop to rewrite the function as a single line of code."*
+
+```{r}
+new_vec <- rpois(20,1)
+
+new_counter <- length(new_vec[new_vec==0]) # subset the new_vec, only keep values equal to 0, then assign counter the length of this new list
+print(new_counter)
+
+print(new_vec) # checking how many 0's are generated to see if it's working
+```
+
+## *"3. Write a function that takes as input two integers representing the number of rows and columns in a matrix. The output is a matrix of these dimensions in which each element is the product of the row number x the column number."*
+
+```{r}
+# -------------------------------------------
+# FUNCTION rownum_x_colnum
+# description: makes a matrix where each entry is product of row # and column #
+# inputs: integer for number of rows, integer for number of columns
+# outputs: matrix where each entry is product of row # and column #
+#############################################
+rownum_x_colnum <- function(num_rows, num_cols) {
+
+my_matrix <- matrix(nrow=num_rows,ncol=num_cols)  # make matrix with specified dimensions
+
+# loops to fill matrix, by going sequentially through each row and column entry and multiplying them
+  for (i in 1:num_rows) {
+    for (j in 1:col_num) {
+      my_matrix[i,j] <- i*j}
+      }
+
+return(my_matrix)
+} # end of rownum_x_colnum
+#----------------------------------------------
+
+row_num <- 7
+col_num <- 8
+
+rownum_x_colnum(row_num, col_num) # prints my_matrix, and functions works- each entry is product of row number and column number
+```
+
+
+
+## *"4. Use randomization tests to design and conduct a randomization test for some of your own data. You will need to modify the functions that read in the data, calculate the metric, and randomize the data. Once those are set up, the program should run correctly calling your new functions. Also, to make your analysis fully repeatable, make sure you set the random number seed at the beginning (use either set.seed() in base R, or char2seed in the TeachingDemos package"*
+
+#### Lauren's Tip for the second half of HW 10 (randomization): if you have two continuous variables and have the same number of columns as the example code, you shouldn't have to change any of the code, besides df<-readData(z="whateverYourFileNameIs.csv") If you have a continuous and categorical variable, you'll have to modify the getMetric function so that you are extracting the p-value (or F statistic, etc) from an ANOVA
+
+```{r}
+# Preliminaries ----------------------------
+
+library(ggplot2)
+```
+
+
+```{r}
+# -------------------------------------------
+# FUNCTION read_data
+# description: read in data set for analysis
+# inputs: file name
+# outputs: data frame of observed data
+#############################################
+read_data <- function(z=NULL) {
+    df<-read.csv(file=z,
+                 na.strings= ".", 
+                 header = T)
+
+return(df)
+}  # end of read_data
+
+#-------------------------------------------
+
+
+# -------------------------------------------
+# FUNCTION: get_pval_anov
+# carry out analysis of variance (somatic cell count by infection status)
+# input: x and y vector of numerics of same length for a dependent and independent variable
+# output: p-value from ANOVA
+#---------------------------------
+get_pval_anov <-function(z=NULL) {
+  
+  x_var<-z[,2] # pull out second column as x var for ANOVA
+  y_var<-z[,3] # pull out third column as y var for ANOVA
+  . <- aov(y_var ~ x_var, data=z) # do anova with variables fed into function
+  . <- summary(.)
+  . <- unlist(.) #pull out p-value from summary
+  pval <- (.)[9]
+
+  
+  return(pval) # 
+}
+#-------------------------------------------
+
+
+# -------------------------------------------
+# FUNCTION shuffle_data
+# description: randomize data for ANOVA
+# inputs: data frame (ID, xvar, yvar) of real data
+# outputs: 3 column data frame (ID, xvar, yvar) data randomized
+#############################################
+shuffle_data <- function(z=NULL) {
+  if(is.null(z)){
+    x_obs <-1:20
+    y_obs <- x_obs + 10*rnorm(20)
+    z <- data.frame(ID=seq_along(x_obs),
+                    x_obs,
+                    y_obs)}
+  
+  z[,3] <- sample(z[,3]) #reshuffles y values so they are no longer associated with x values
+
+  return(z)
+
+}  # end of shuffle_data
+#-------------------------------------------
+
+
+
+# FUNCTION get_pval
+# description: calculate p value from simulation
+# inputs: list of observed metric and vector of simulated metrics
+# outputs: lower, and upper tail probability value
+#############################################
+get_pval <- function(z=NULL) {
+  
+      p_lower <- mean(z[[2]]<=z[[1]]) # set up conditional, then do math on it; what is proportion of 1000 cases we're looking at for which simulated value is less than observed value
+      p_upper <- mean(z[[2]]>=z[[1]])
+
+return(c(pL=p_lower,pU=p_upper))
+
+}  # end of get_pval
+#-------------------------------------------
+
+
+# -------------------------------------------
+# FUNCTION plot_ran_test
+# description: create a ggplot of histogram of simulated values
+# inputs: list of observed metric and vector simulated metrics
+# outputs: saved ggplot graph
+#############################################
+plot_ran_test <- function(z=NULL) {
+  
+  df <- data.frame(ID=seq_along(z[[2]]), sim_x=z[[2]]) # has vector of 1000 simulated slopes we have
+  
+  p1 <- ggplot(data=df, mapping=aes(x=sim_x))
+  p1 + geom_histogram(mapping=aes(fill=I("goldenrod"), 
+                                  color=I("black"))) +
+  geom_vline(aes(xintercept=z[[1]], col="blue"))
+  # histogram of simulated slopes, and then vertical line where actual slope is - tail probs are split to left and right of this line
+
+
+}  # end of plot_ran_test
+#-------------------------------------------
+
+```
+
+```{r}
+# run the simulation, using the functions ----------------------------
+
+set.seed(100)
+
+n_sim <- 1000 # number of simulated data sets we're going to run
+x_sim <- rep(NA,n_sim) # set up empty vector for simulated p-values for ANOVA
+
+
+df<-read_data(z="infstatus_by_ls1.csv") # read in my real data
+
+x_obs <- get_pval_anov(df) # get p-value for ANOVA of real observed data
+
+
+for (i in seq_len(n_sim)) {
+  x_sim[i] <- get_pval_anov(shuffle_data(df))
+  } # run simulation, getting p-value of shuffled data 1000 times
+
+
+comb_vals <- list(x_obs, x_sim) # combine pvals from observed and sim data
+get_pval(comb_vals)
+plot_ran_test(comb_vals)
+
+```
+
+## *"5. For comparison, calculate in R the standard statistical analysis you would use with these data. How does the p-value compare for the standard test versus the p value you estimated from your randomization test? If the p values seem very different, run the program again with a different starting seed (and/or increase the number of replications in your randomization test). If there are persistent differences in the p value of the standard test versus your randomization, what do you think is responsible for this difference?"*
+
+```{r}
+# calculate ANOVA for real data ----------------------------
+
+ls_data<-read_data(z="infstatus_by_ls1.csv")
+ls_anov<-summary(aov(ls_data$linear_score~ls_data$infection_status, data=ls_data))
+print(ls_anov) # p-val for real data is 0.00478; most of the time (99.7% of the time) the p-values from the random simulation were higher than this. This is strong evidence that the difference we see in mean linear score between the two groups is not due to chance alone.
+```
+
+
+
