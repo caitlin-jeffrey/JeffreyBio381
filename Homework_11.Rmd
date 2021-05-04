@@ -1,0 +1,179 @@
+---
+title: "Homework 11"
+author: "Caitlin Jeffrey"
+date: "May 4, 2021"
+output: html_document
+---
+
+## Make data set
+
+```{r}
+# Preliminaries ----------------------------
+library(dplyr)
+library(tidyr)
+```
+
+
+
+```{r}
+# making a fake data set, with two treatment groups that both follow a normal distribution
+# used my own data set of 4212 mammary gland observations, seperated into infected glands and healthy glands, then found the actual mean somatic cell count for each group (removing the NA's lead to n = 1042 observations of infected glands, n = 3063 observations of healthy glands). Used the actual means and sample sizes for each group in the "fake" data, left standard deviation at 2
+
+OREI<-read.csv("OREIculture_results_csv.csv", na.strings= ".", header = T) # read in entire real data .csv
+IMI<-filter(OREI, imi_series=="yes") # make object with only infected glands
+IMI$scc<-as.numeric(IMI$scc) # coerce somatic cell count back to numeric
+mean(IMI[["scc"]], na.rm=T) # find actual mean SCC of infected glands, removing NA's (551,433.7)
+sd(IMI[["scc"]], na.rm=T) # find actual SD for SCC of infected glands, removing NA's (1,470,512)
+
+no<-filter(OREI, imi_series=="") # make object with only healthy glands
+no$scc<-as.numeric(no$scc) # coerce somatic cell count back to numeric
+mean(no[["scc"]], na.rm=T) # find actual mean SCC of infected glands, removing NA's (77,700.16)
+sd(no[["scc"]], na.rm=T) # find actual SD for SCC of infected glands, removing NA's (423,140.9)
+
+# make real data in comparable format to fake data generated from function below
+real_data_all<-rbind(IMI, no)
+scc1<-real_data_all %>% select(scc, imi_series) # select only 2 columns I want
+scc1$imi_series[scc1$imi_series == "yes"] <- "infected" # rename variables and columns
+scc1$imi_series[scc1$imi_series == ""] <- "healthy"
+scc1 <- scc1 %>% rename(somatic_cell_count = scc, infection_status = imi_series)
+scc1<-scc1 %>% drop_na() # get rid of any observations where scc = NA
+```
+
+
+```{r}
+# write function to make fake data (both normal distribution) using parameters from real data above (except SD's, those are too wild)
+
+###################################
+# FUNCTION: make_data
+# make a fake data set of somatic cell counts for infected and healthy quarters
+# input: num_quarters = number of quarters in each health category
+      # mean_inf = mean SCC of infected quarters
+      # mean_healthy = mean SCC of healthy quarters
+# output: fake data set with parameters based on real data
+#---------------------------------
+make_data<-function(num_quarters, mean_inf, sd_inf, mean_healthy, sd_healthy) {
+  
+  infected<-cbind(rnorm(n=num_quarters,mean=mean_inf,sd=sd_inf),rep(c("infected"),
+                                                                    each=num_quarters))
+  healthy<-cbind(rnorm(n=num_quarters, mean=mean_healthy,sd=sd_healthy),
+                 rep(c("healthy"), each=num_quarters))
+  inf_health<-rbind(infected, healthy)
+  # inf_health_df<-as.data.frame(inf_health)
+  my_data<-as.data.frame(inf_health)
+  colnames(my_data) <-c("somatic_cell_count", "infection_status")
+  my_data$somatic_cell_count<-as.numeric(my_data$somatic_cell_count)
+  peek<-head(my_data)
+
+print(peek)  
+return(my_data)
+}
+
+scc2<-make_data(num_quarters=2000, mean_inf=551500, sd_inf=100000, mean_healthy=78000, sd_healthy=100000)
+scc3<-make_data(num_quarters=2000, mean_inf=561500, sd_inf=100000, mean_healthy=77000, sd_healthy=100000)
+scc4<-make_data(num_quarters=2000, mean_inf=541500, sd_inf=100000, mean_healthy=76000, sd_healthy=100000)
+scc5<-make_data(num_quarters=2000, mean_inf=531500, sd_inf=100000, mean_healthy=79000, sd_healthy=100000)
+scc6<-make_data(num_quarters=2000, mean_inf=571500, sd_inf=100000, mean_healthy=80000, sd_healthy=100000)
+
+f_list <-c("scc1", "scc2", "scc3", "scc4", "scc5", "scc6") # make list of data frame names above
+
+#######################################
+# Global variables
+file_folder <- "SCCFiles/"
+n_files <- 6
+file_out <- "SCCStatsSummary.csv"
+#######################################
+
+dir.create(file_folder) # will create new folder with name assigned above
+
+for(i in 1:length(f_list)) {                              
+  write.csv(get(f_list[i]),                              # write CSV files to folder
+             paste0("C:/Users/caitl/OneDrive/Desktop/bio381 scripting/SCCFiles/",
+                    f_list[i],
+                    ".csv"),
+             row.names = T)}
+file_names <- list.files(path=file_folder) # all files names will go into this vector from this folder
+```
+
+
+
+```{r}
+# -------------------------------------------
+# FUNCTION: get_pval_anov
+# carry out analysis of variance (somatic cell count by infection status)
+# input: x and y vector of numerics of same length for a dependent and independent variable
+# output: p-value from ANOVA
+#---------------------------------
+get_pval_anov <-function(z=NULL) {
+  
+  x_var<-z[,2] # pull out second column as x var for ANOVA
+  y_var<-z[,1] # pull out third column as y var for ANOVA
+  . <- aov(y_var ~ x_var, data=z) # do anova with variables fed into function
+  . <- summary(.)
+  . <- unlist(.) #pull out p-value from summary
+  pval <- (.)[9]
+
+  
+  return(pval) # 
+}
+#-------------------------------------------
+
+```
+
+
+
+```{r}
+# Create a data frame to hold summary file statistics
+
+file_name <-file_names # make an object with the 6 csv file names
+head(file_name) # check names are right
+
+# make empty objects to hold stats, then bind together
+ID <- seq_along(file_names)
+p_val <- rep(NA,length(file_names))
+mean_healthy <- rep(NA,length(file_names))
+mean_inf <- rep(NA,length(file_names))
+stats_out <- data.frame(ID, file_name,p_val,mean_healthy,mean_inf)
+print(stats_out) # check that data frame has structure we want, and is full of NA's
+```
+
+
+
+```{r}
+
+# batch process by looping through individual files and operating on them
+
+for (i in seq_along(file_names)) { # will grab whatever file is currently in there
+ data <- read.csv(file=paste(file_folder,
+                                file_names[i], 
+                                sep=""), # ref to paste function
+                                sep=",", # ref to table function
+                     header=T)
+  . <- get_pval_anov(data) # pull out p-value from anova
+  stats_out[i,3] <- unlist(.) # these are the columns with NA, waiting to be filled - unlist, copy into third
+  means<-tapply(data$somatic_cell_count, data$infection_status, mean)
+  stats_out[i,4]<- means[[1]]
+  stats_out[i,5]<- means[[2]]
+} # end of for loop
+
+
+# set up an output file and incorporate time stamp and minimal metadata
+write.table(cat("#Summary stats for ",
+                "batch processing of ANOVA's",
+                "\n",
+                "# timestamp: ", 
+                as.character(Sys.time()),
+                "\n",
+                file=file_out,
+                row.names="",
+                col.names="",
+                sep=""))
+
+# now, add the data frame
+write.table(x=stats_out,
+            file=file_out,
+            row.names=F,
+            col.names=T,
+            sep=",",
+            append=T)
+```
+

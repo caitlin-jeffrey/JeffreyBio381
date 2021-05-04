@@ -1,0 +1,3 @@
+#Summary stats for batch processing of ANOVA's
+# timestamp: 2021-05-04 16:43:26
+"ID","file_name","p_val","mean_healthy","mean_inf"
