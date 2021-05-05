@@ -1,0 +1,133 @@
+---
+title: "Homework 12"
+author: "Caitlin Jeffrey"
+date: "May 5, 2021"
+output: html_document
+---
+
+```{r}
+# Preliminaries ----------------------------
+library(ggplot2)
+library(dplyr)
+library(RColorBrewer)
+library(broman)
+plot_crayons() # shows all the color names
+brocolors("crayons") # to get numerical codes for colors
+```
+
+```{r}
+# box plot of linear score by pathogen type, with red horizontal line to show LS=200,000 cells/mL (threshold indicative of subclinical infection)
+
+april_box_plot<-read.csv("4_2021_for_box_plot.csv", na.strings= ".", header = T)
+counts1<- april_box_plot %>% group_by(Pathogen_group) %>% summarise(n = n())
+
+#tiff("april_plot.tiff", units="in", width=8, height=5, res=300)
+april_box_plot %>%
+  ggplot(aes(x=Pathogen_group, y=ls, fill=Pathogen_group)) +
+    geom_boxplot() +
+    scale_fill_brewer(palette="Blues", labels = paste(counts1$Pathogen_group, "n =", counts1$n))+
+    geom_jitter(color="black", size=0.4, alpha=0.9) +
+    geom_hline(yintercept=4, linetype="dashed", color = "red", size=1.1)+
+    labs(title="Linear score by pathogen type",
+       x="Pathogen type",
+       y="Linear score")+
+    theme(plot.title = element_text(hjust = 0.5))+
+    theme(axis.text.x=element_blank())+
+    theme(axis.ticks.x=element_blank())+
+    theme(axis.title.x = element_blank())+
+    theme(axis.title.y = element_text(margin = margin(r = 20)))+
+    theme(plot.title = element_text(margin = margin(b = 20)))+
+    theme(panel.grid.major = element_line(colour = "grey"))+
+    theme(panel.grid.minor = element_blank())+
+    theme(panel.background = element_blank())+
+    theme(axis.line = element_line(colour = "grey"))
+#dev.off()
+
+```
+
+```{r}
+# box plot of linear score of non-aureus Staphylococci only, grouped by species; red horizontal line to show LS=200,000 cells/mL (threshold indicative of subclinical infection)
+
+cns_box_plot<-read.csv("cns_4_2021_for_box_plot.csv", na.strings= ".", header = T)
+
+# make object with counts by species, which then gets referred to in ggplot coding chunk
+counts<- cns_box_plot %>% group_by(NAS_species) %>% summarise(n = n())
+
+#tiff("cns_plot.tiff", units="in", width=8, height=5, res=300)
+cns_box_plot %>%
+  ggplot(aes(x=NAS_species, y=ls, fill=NAS_species)) +
+    geom_boxplot() +
+    scale_fill_manual(values=c("#9aceeb", "#324ab2", "#c5d0e6", "#3bb08f", "#2b6cc4", "#979aaa", "#1f75fe", "#93dfb8"), labels = paste(counts$NAS_species, "n =", counts$n))+ 
+    geom_jitter(color="black", size=0.4, alpha=0.9) +
+    geom_hline(yintercept=4, linetype="dashed", color = "red", size=0.9)+
+    labs(title="Linear score by NAS species",
+       x="NAS species causing IMI",
+       y="Linear score")+
+    theme(plot.title = element_text(hjust = 0.5))+
+    theme(axis.text.x=element_blank())+
+    theme(axis.ticks.x=element_blank())+
+    theme(axis.title.x = element_blank())+
+    theme(axis.title.y = element_text(margin = margin(r = 20)))+
+    theme(plot.title = element_text(margin = margin(b = 20)))+
+    theme(panel.grid.major = element_line(colour = "grey"))+
+    theme(panel.grid.minor = element_blank())+
+    theme(panel.background = element_blank())+
+    theme(axis.line = element_line(colour = "grey"))
+#dev.off()
+
+```
+
+```{r}
+#Density Plot for LS by path_type
+
+df<-read.csv("yes_no_ls.csv", na.strings= ".", header = T) # read in data
+df$Causative_pathogen[df$Causative_pathogen == ""] <-"None" # change where it's blank for no intrammmary infection to "pathogen type: none"
+unique(df$Causative_pathogen) # check categories of causative pathogen
+
+# make object with counts by type, which then gets referred to in ggplot coding chunk
+dens_counts<- df %>% group_by(Causative_pathogen) %>% summarise(n = n())
+
+
+plot_theme <- theme(axis.title = element_text(size = 18),
+                     axis.text = element_text(size = 10),
+                     plot.title = element_text(size = 20, hjust = 0.5),
+                     plot.subtitle = element_text(size = 12, hjust = 0.5),
+                     plot.caption = element_text(size = 18),
+                     legend.title=element_text(size=12),
+                     legend.text=element_text(size=10),
+                     legend.position = c(0.8,0.70))
+
+#densplot<-
+
+df %>% ggplot(aes(x = ls_no_neg, fill=Causative_pathogen)) + 
+          geom_density(aes(y=..count..),alpha=0.5) + theme_bw()+
+          scale_fill_manual(values = c("dodgerblue","darkorange1","#FFFF00","seashell2", "springgreen4", "darkmagenta"), labels = paste(dens_counts$Causative_pathogen, "n =", dens_counts$n))+
+          scale_x_continuous(limits = c(-1, 11))+
+          labs(title="Pathogen type density plot by linear score",
+               x= "Linear score", y= "Count") + plot_theme
+#ggsave("densplot.png", densplot, width = 15 , height = 8)
+```
+
+
+```{r}
+# Better show other path types than just "None"----------------------
+df_no_none <- filter(df, Causative_pathogen != "None")
+dens_counts2<- df_no_none %>% group_by(Causative_pathogen) %>% summarise(n = n())
+
+#dansplot2<-
+df_no_none %>% ggplot(aes(x = ls_no_neg, fill=Causative_pathogen)) + 
+          geom_density(aes(y=..count..),alpha=0.5) + theme_bw()+
+          scale_fill_manual(values = c("dodgerblue","darkorange1","#FFFF00","seashell2", "springgreen4", "darkmagenta"), labels = paste(dens_counts2$Causative_pathogen, "n =", dens_counts2$n))+
+          scale_x_continuous(limits = c(-1, 11))+
+          scale_y_continuous(limits = c(0, 175))+
+          labs(title="Pathogen type density plot by linear score",
+               x= "Linear score", y= "Count") + plot_theme
+#ggsave("densplot2.png", densplot, width = 15 , height = 8)
+
+```
+
+
+
+
+
+

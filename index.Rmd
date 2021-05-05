@@ -37,3 +37,5 @@ Week 9: [Homework 9: Oh Lawd, it's functions!](Homework_09.html)
 Week 10: [Homework 10](Homework_10.html)
 
 Week 11: [Homework 11](Homework_11.html)
+
+Week 12: [Homework 12: Gaga for ggplot!](Homework_12.html)
